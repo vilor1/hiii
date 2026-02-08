@@ -1,6 +1,6 @@
 {
   "name": "vilor-ai-quantum",
-  "version": "3.0.0",
+  "version": "3.5.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,14 +13,12 @@
     "lucide-react": "^0.446.0",
     "framer-motion": "^11.11.10",
     "react-markdown": "^9.0.1",
-    "prismjs": "^1.29.0",
     "clsx": "^2.1.1"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
     "@types/react": "^18.2.0",
     "@types/node": "^20.11.0",
-    "@types/react-dom": "^18.2.0",
-    "@types/prismjs": "^1.26.4"
+    "@types/react-dom": "^18.2.0"
   }
 }
