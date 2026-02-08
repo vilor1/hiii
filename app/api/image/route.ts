@@ -3,40 +3,50 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
-    // Chave que você forneceu
-    const GEMINI_KEY = "AIzaSyALkbomzaKjkMVWbdBOA801UEwLIA5O8G0";
+    const key = "AIzaSyALkbomzaKjkMVWbdBOA801UEwLIA5O8G0";
     
-    // URL oficial do Imagen 3 via Gemini API
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-images:generateImages?key=${GEMINI_KEY}`;
+    // Endpoint atualizado para a versão estável de predição
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-images:generateImages?key=${key}`;
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        instances: [{ prompt: prompt }],
-        parameters: { 
+        instances: [
+          { prompt: prompt }
+        ],
+        parameters: {
           sampleCount: 1,
           aspectRatio: "1:1",
-          outputMimeType: "image/png"
+          safetySetting: "BLOCK_LOW_AND_ABOVE"
         }
       }),
     });
 
-    const data = await response.json();
-
-    // Log para debug no console da Vercel
-    if (data.error) {
-      console.error("Erro Gemini:", data.error);
-      return NextResponse.json({ error: data.error.message }, { status: 400 });
+    // Verificação de texto puro antes do JSON para evitar o "Unexpected end"
+    const responseText = await response.text();
+    
+    if (!responseText) {
+      return NextResponse.json({ error: "API retornou resposta vazia. Tente um prompt diferente." }, { status: 500 });
     }
 
-    // O Imagen retorna a imagem em bytesBase64Encoded dentro de predictions
-    const base64Image = data.predictions[0].bytesBase64Encoded;
+    const data = JSON.parse(responseText);
     
-    if (!base64Image) throw new Error("Imagem não gerada");
+    if (data.error) {
+      return NextResponse.json({ error: data.error.message || "Erro na API do Google" }, { status: 400 });
+    }
 
-    return NextResponse.json({ url: `data:image/png;base64,${base64Image}` });
+    // O Imagen 3 retorna um array de predições com bytesBase64Encoded
+    if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
+      const b64 = data.predictions[0].bytesBase64Encoded;
+      return NextResponse.json({ url: `data:image/png;base64,${b64}` });
+    }
+
+    return NextResponse.json({ error: "Nenhuma imagem foi gerada. O prompt pode ter sido bloqueado pelos filtros de segurança." }, { status: 400 });
+
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Erro ao conectar com Gemini" }, { status: 500 });
+    console.error("Erro interno Image:", error);
+    return NextResponse.json({ error: "Falha na comunicação com o motor Nano Banana." }, { status: 500 });
   }
-}
