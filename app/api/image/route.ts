@@ -5,7 +5,6 @@ export async function POST(req: Request) {
     const { prompt } = await req.json();
     const key = "AIzaSyALkbomzaKjkMVWbdBOA801UEwLIA5O8G0";
     
-    // Endpoint atualizado para a versão estável de predição
     const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-images:generateImages?key=${key}`;
 
     const response = await fetch(url, {
@@ -14,9 +13,7 @@ export async function POST(req: Request) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        instances: [
-          { prompt: prompt }
-        ],
+        instances: [{ prompt: prompt }],
         parameters: {
           sampleCount: 1,
           aspectRatio: "1:1",
@@ -25,11 +22,10 @@ export async function POST(req: Request) {
       }),
     });
 
-    // Verificação de texto puro antes do JSON para evitar o "Unexpected end"
     const responseText = await response.text();
     
     if (!responseText) {
-      return NextResponse.json({ error: "API retornou resposta vazia. Tente um prompt diferente." }, { status: 500 });
+      return NextResponse.json({ error: "API retornou resposta vazia." }, { status: 500 });
     }
 
     const data = JSON.parse(responseText);
@@ -38,15 +34,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: data.error.message || "Erro na API do Google" }, { status: 400 });
     }
 
-    // O Imagen 3 retorna um array de predições com bytesBase64Encoded
     if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
       const b64 = data.predictions[0].bytesBase64Encoded;
       return NextResponse.json({ url: `data:image/png;base64,${b64}` });
     }
 
-    return NextResponse.json({ error: "Nenhuma imagem foi gerada. O prompt pode ter sido bloqueado pelos filtros de segurança." }, { status: 400 });
+    return NextResponse.json({ error: "Nenhuma imagem foi gerada (Filtro de Segurança)." }, { status: 400 });
 
   } catch (error: any) {
     console.error("Erro interno Image:", error);
     return NextResponse.json({ error: "Falha na comunicação com o motor Nano Banana." }, { status: 500 });
   }
+} // <--- Esta chave estava faltando ou mal posicionada!
