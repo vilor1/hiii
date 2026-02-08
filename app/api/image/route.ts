@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
-    const key = "AIzaSyALkbomzaKjkMVWbdBOA801UEwLIA5O8G0";
+    const key = "AIzaSyDQlBGHmRk0u9xOJXptsBbRygJyyO0JhbU";
     
     // Endpoint atualizado para o modelo exato Imagen 4.0
     const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:generateImages?key=${key}`;
